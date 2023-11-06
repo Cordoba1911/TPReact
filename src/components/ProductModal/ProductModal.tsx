@@ -16,61 +16,6 @@ type ProductModalProps = {
   refreshData: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-//Yup
-const validationSchema = () => {
-  return Yup.object().shape({
-    id: Yup.number().integer().min(0),
-    title: Yup.string().required("El titulo es requerido"),
-    price: Yup.number().min(0).required("El precio es requerido"),
-    description: Yup.string().required("La descripcion es requerida"),
-    category: Yup.string().required("La categoria es requerida"),
-    image: Yup.string().required("La URL de la imagen es requerida"),
-  });
-};
-
-//CREATE - UPDATE
-const handleSaveUpdate = async ({
-  prod,
-  onHide,
-  refreshData,
-}: ProductModalProps) => {
-  try {
-    const isNew = prod.id === 0;
-    if (isNew) {
-      await ProductService.createProduct(prod);
-    } else {
-      await ProductService.updateProduct(prod.id, prod);
-    }
-    toast.success(isNew ? "Producto Creado" : "Producto Actualizado", {
-      position: "top-center",
-    });
-    onHide();
-    refreshData((prevState) => !prevState);
-  } catch (error) {
-    console.error(error);
-    toast.error("A ocurrido un Error");
-  }
-};
-
-//DELETE
-const handleDelete = async ({
-  prod,
-  onHide,
-  refreshData,
-}: ProductModalProps) => {
-  try {
-    await ProductService.deleteProduct(prod.id);
-    toast.success("Producto Borrado", {
-      position: "top-center",
-    });
-    onHide();
-    refreshData((prevState) => !prevState);
-  } catch (error) {
-    console.error(error);
-    toast.error("A ocurrido un Error");
-  }
-};
-
 const ProductModal = ({
   show,
   onHide,
@@ -79,23 +24,59 @@ const ProductModal = ({
   modalType,
   refreshData,
 }: ProductModalProps) => {
+  //Yup
+  const validationSchema = () => {
+    return Yup.object().shape({
+      id: Yup.number().integer().min(0),
+      title: Yup.string().required("El titulo es requerido"),
+      price: Yup.number().min(0).required("El precio es requerido"),
+      description: Yup.string().required("La descripcion es requerida"),
+      category: Yup.string().required("La categoria es requerida"),
+      image: Yup.string().required("La URL de la imagen es requerida"),
+    });
+  };
+
+  //CREATE - UPDATE
+  const handleSaveUpdate = async (prod: Product) => {
+    try {
+      const isNew = prod.id === 0;
+      if (isNew) {
+        await ProductService.createProduct(prod);
+      } else {
+        await ProductService.updateProduct(prod.id, prod);
+      }
+      toast.success(isNew ? "Producto Creado" : "Producto Actualizado", {
+        position: "top-center",
+      });
+      onHide();
+      refreshData((prevState) => !prevState);
+    } catch (error) {
+      console.error(error);
+      toast.error("A ocurrido un Error");
+    }
+  };
+
+  //DELETE
+  const handleDelete = async () => {
+    try {
+      await ProductService.deleteProduct(prod.id);
+      toast.success("Producto Borrado", {
+        position: "top-center",
+      });
+      onHide();
+      refreshData((prevState) => !prevState);
+    } catch (error) {
+      console.error(error);
+      toast.error("A ocurrido un Error");
+    }
+  };
   //Formik
   const formik = useFormik({
     initialValues: prod,
     validationSchema: validationSchema(),
     validateOnChange: true,
     validateOnBlur: true,
-    onSubmit: () => {
-      const modalProps: ProductModalProps = {
-        show: true, // Asegúrate de asignar el valor correcto
-        title: "Título", // Asegúrate de asignar el valor correcto
-        modalType: modalType, // Asegúrate de asignar el valor correcto
-        prod,
-        onHide,
-        refreshData,
-      };
-      handleSaveUpdate(modalProps);
-    },
+    onSubmit: (obj: Product) => handleSaveUpdate(obj),
   });
   return (
     <>
@@ -115,7 +96,10 @@ const ProductModal = ({
               <Button variant="secondary" onClick={onHide}>
                 Cancelar
               </Button>
-              <Button variant="danger" onClick={() => handleDelete({prod, onHide, refreshData})}>
+              <Button
+                variant="danger"
+                onClick={() => handleDelete()}
+              >
                 Borrar
               </Button>
             </Modal.Footer>
