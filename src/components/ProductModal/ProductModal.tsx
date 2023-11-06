@@ -8,10 +8,10 @@ import { toast } from "react-toastify";
 import React from "react";
 
 type ProductModalProps = {
-  show: boolean;
+  show?: boolean;
   onHide: () => void;
-  title: string;
-  modalType: ModalType;
+  title?: string;
+  modalType?: ModalType;
   prod: Product;
   refreshData: React.Dispatch<React.SetStateAction<boolean>>;
 };
@@ -115,10 +115,7 @@ const ProductModal = ({
               <Button variant="secondary" onClick={onHide}>
                 Cancelar
               </Button>
-              <Button
-                variant="danger"
-                onClick={() => handleDelete({ prod, onHide, refreshData })}
-              >
+              <Button variant="danger" onClick={() => handleDelete({prod, onHide, refreshData})}>
                 Borrar
               </Button>
             </Modal.Footer>
